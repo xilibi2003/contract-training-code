@@ -1,9 +1,4 @@
 node_modules
-build/
-contracts/artifacts/*
-.secret
-
-node_modules
 .env
 coverage
 coverage.json
