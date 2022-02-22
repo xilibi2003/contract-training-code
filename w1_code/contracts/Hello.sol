@@ -1,12 +1,12 @@
 //  SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Counter {
+contract Hello {
 
   uint public counter;
 
-  constructor() {
-    counter = 0;
+  constructor(uint x) {
+    counter = x;
   }
 
   function count() public {

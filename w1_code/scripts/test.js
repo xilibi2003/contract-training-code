@@ -5,6 +5,8 @@ module.exports = async function(callback) {
 
   await counter.count();
   let value = await counter.counter();
+
+
   
   console.log("current conter value:" + value); 
 }
