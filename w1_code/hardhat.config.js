@@ -1,11 +1,12 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 require('hardhat-abi-exporter');
 require("./task/counter.js");
 
 const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret").toString().trim();
 const infurakey='';
-
+const scankey = '';
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -47,6 +48,11 @@ module.exports = {
       },
       chainId: 5,
     }
+  },
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: scankey
   }
 
 };
