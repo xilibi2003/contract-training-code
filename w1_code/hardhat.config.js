@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
-
+require('hardhat-abi-exporter');
 require("./task/counter.js");
 
 const fs = require('fs');
@@ -25,6 +25,16 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: "0.8.9",
+
+  abiExporter: {
+    path: './deployments/habi',
+    clear: true,
+    flat: true,
+    only: [],
+    spacing: 2,
+    pretty: true,
+  },
+
   networks: {
     dev: {
       url: "http://127.0.0.1:8545",
