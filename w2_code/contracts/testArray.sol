@@ -12,4 +12,21 @@ contract testArray {
     function add(uint x) public {
         numbers.push(x);
 	}
+
+    function dosome() public {
+        uint len = numbers.length;
+        for (uint i = 0; i < len; i++) {
+            // do...
+        }
+    }
+
+    function remove(uint index) public {
+        uint len = numbers.length;
+        if (index == len - 1) {
+            numbers.pop();
+        } else {
+            numbers[index] = numbers[len - 1];
+            epoches.pop();
+        }
+    }
 }
