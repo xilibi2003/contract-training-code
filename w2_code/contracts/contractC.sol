@@ -1,6 +1,11 @@
 pragma solidity  >=0.8.0;
 
 contract C {
+
+    constructor() {
+
+    }
+
     function f(uint a) private pure returns (uint b) { return a + 1; }
     function setData(uint a) internal { data = a; }
     uint public data;
@@ -13,8 +18,6 @@ contract CreateC {
         C  c = new C();
         return address(c);
     }
-
-
 
     function createContract2(address impl) public returns (address) {
         return createClone(impl);
@@ -29,7 +32,7 @@ contract CreateC {
     function getAddress(uint _salt) public view returns (address) {
         bytes memory bytecode = type(C).creationCode;
         //  if constructor
-        // bytecode = abi.encodePacked(bytecode, abi.encode(p1, p2));
+        // bytecode = abi.encodePacked(bytecode, abi.encode(x));
 
         bytes32 hash = keccak256(
             abi.encodePacked(bytes1(0xff), address(this), keccak256(abi.encode(_salt)), keccak256(bytecode))

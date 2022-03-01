@@ -26,7 +26,7 @@ contract testArray {
             numbers.pop();
         } else {
             numbers[index] = numbers[len - 1];
-            epoches.pop();
+            numbers.pop();
         }
     }
 }
