@@ -13,6 +13,7 @@ contract testArray {
         numbers.push(x);
 	}
 
+    // gas issue
     function dosome() public {
         uint len = numbers.length;
         for (uint i = 0; i < len; i++) {
