@@ -1,8 +1,13 @@
 <script>
 import { ethers } from 'ethers'
 
-import erc20Addr from '../../../deployments/dev/MyERC20.json'
-import erc20Abi from '../../../deployments/abi/MyERC20.json'
+import erc2612Addr from '../../../deployments/dev/ERC2612.json'
+import erc2612Abi from '../../../deployments/abi/ERC2612.json'
+
+import bankAddr from '../../../deployments/dev/Bank.json'
+import bankAbi from '../../../deployments/abi/Bank.json'
+
+import { signPremit } from "./../sign.js";
 
 export default {
 
@@ -19,6 +24,9 @@ export default {
       decimal: null,
       symbol: null,
       supply: null,
+
+      stakeAmount: null,
+
     }
   },
 
@@ -26,6 +34,7 @@ export default {
     await this.initAccount()
     this.initContract()
     this.getInfo();
+    this.getNonce();
   },
 
   methods: {
@@ -36,11 +45,14 @@ export default {
           this.accounts = await window.ethereum.enable()
           console.log("accounts:" + this.accounts);
           this.account = this.accounts[0];
-          this.provider = window.ethereum;
+          this.currProvider = window.ethereum;
+          this.provider = new ethers.providers.Web3Provider(window.ethereum);
 
-          this.signer = new ethers.providers.Web3Provider(this.provider).getSigner()
-          // this.chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }));
-          // console.log("chainId:" + this.chainId);
+          this.signer = this.provider.getSigner()
+          let network = await this.provider.getNetwork()
+          this.chainId = network.chainId;
+          console.log("chainId:", this.chainId);
+
         } catch(error){
           console.log("User denied account access", error)
         }
@@ -50,8 +62,12 @@ export default {
     },
 
     async initContract() {
-      this.erc20Token = new ethers.Contract(erc20Addr.address, 
-        erc20Abi, this.signer);
+      this.erc20Token = new ethers.Contract(erc2612Addr.address, 
+        erc2612Abi, this.signer);
+
+      this.bank = new ethers.Contract(bankAddr.address, 
+        bankAbi, this.signer);
+
     }, 
 
     getInfo() {
@@ -71,6 +87,14 @@ export default {
       this.erc20Token.balanceOf(this.account).then((r) => {
         this.balance = ethers.utils.formatUnits(r, 18);
       })
+      
+    },
+
+    getNonce() {
+      this.erc20Token.nonces(this.account).then(r => {
+        this.nonce = r.toString();
+        console.log("nonce:" + this.nonce);
+      })
     },
 
     transfer() {
@@ -79,6 +103,42 @@ export default {
         console.log(r);  // 返回值不是true
         this.getInfo();
       })
+    },
+
+    permitStake() {
+      this.deadline = Math.ceil(Date.now() / 1000) + parseInt(20 * 60);
+      
+      let amount =  ethers.utils.parseUnits(this.stakeAmount).toString();
+      console.log("amount:" + amount)
+
+      let msgParams = signPremit("ERC2612", 
+        erc2612Addr.address,
+        this.account, bankAddr.address, amount, this.deadline, this.chainId, this.nonce);
+
+      this.currProvider.sendAsync({
+        method: 'eth_signTypedData_v4',
+        params: [this.account, msgParams],
+        from: this.account
+      }, (err, sign) => {
+        this.sign = sign.result;
+        console.log(this.sign)
+
+        //  椭圆曲线签名签名的值:
+        // r = 签名的前 32 字节
+        // s = 签名的第2个32 字节
+        // v = 签名的最后一个字节
+
+        let r = '0x' + this.sign.substring(2).substring(0, 64);
+        let s = '0x' + this.sign.substring(2).substring(64, 128);
+        let v = '0x' + this.sign.substring(2).substring(128, 130);
+
+        this.bank.permitDeposit(this.account, amount, this.deadline, v, r, s, {
+                from: this.account
+              }).then(() => {
+                this.getInfo();
+                this.getNonce();
+            })
+      });
     }
   }
 }
@@ -97,7 +157,7 @@ export default {
         <br /> 我的余额 : {{ balance  }}
       </div>
 
-      <div>
+      <div >
         <br />转账到:
         <input type="text" v-model="recipient" />
         <br />转账金额
@@ -105,6 +165,11 @@ export default {
         <br />
         <button @click="transfer()"> 转账 </button>
       </div>
+
+    <div >
+      <input v-model="stakeAmount" placeholder="输入质押量"/>
+      <button @click="permitStake">离线授权存款</button>
+    </div>
 
   </div>
 </template>
