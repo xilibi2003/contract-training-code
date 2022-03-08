@@ -109,11 +109,13 @@ export default {
       this.deadline = Math.ceil(Date.now() / 1000) + parseInt(20 * 60);
       
       let amount =  ethers.utils.parseUnits(this.stakeAmount).toString();
-      console.log("amount:" + amount)
+      
 
       let msgParams = premitTypedDate("ERC2612", 
         erc2612Addr.address,
         this.account, bankAddr.address, amount, this.deadline, this.chainId, this.nonce);
+      
+      console.log("msgParams:" + msgParams)
 
       this.currProvider.sendAsync({
         method: 'eth_signTypedData_v4',
