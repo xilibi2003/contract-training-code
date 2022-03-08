@@ -1,4 +1,4 @@
-  export function signPremit(tokenName, verifyAddr, owner, spender, value, deadline, chainid, nonce) {
+  export function premitTypedDate(tokenName, verifyAddr, owner, spender, value, deadline, chainid, nonce) {
       let types = {
         EIP712Domain: [{
             name: 'name',

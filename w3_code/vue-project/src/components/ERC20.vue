@@ -7,7 +7,7 @@ import erc2612Abi from '../../../deployments/abi/ERC2612.json'
 import bankAddr from '../../../deployments/dev/Bank.json'
 import bankAbi from '../../../deployments/abi/Bank.json'
 
-import { signPremit } from "./../sign.js";
+import { premitTypedDate } from "../typedData.js";
 
 export default {
 
@@ -111,7 +111,7 @@ export default {
       let amount =  ethers.utils.parseUnits(this.stakeAmount).toString();
       console.log("amount:" + amount)
 
-      let msgParams = signPremit("ERC2612", 
+      let msgParams = premitTypedDate("ERC2612", 
         erc2612Addr.address,
         this.account, bankAddr.address, amount, this.deadline, this.chainId, this.nonce);
 
