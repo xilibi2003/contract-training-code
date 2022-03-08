@@ -1,6 +1,8 @@
 <script>
 import { ethers } from 'ethers'
 
+import erc20Addr from '../../../deployments/dev/MyERC20.json'
+import erc20Abi from '../../../deployments/abi/MyERC20.json'
 
 export default {
 
@@ -16,12 +18,13 @@ export default {
       name: null,
       decimal: null,
       symbol: null,
+      supply: null,
     }
   },
 
   async created() {
     await this.initAccount()
-    await this.initContract()
+    this.initContract()
     this.getInfo();
   },
 
@@ -36,8 +39,8 @@ export default {
           this.provider = window.ethereum;
 
           this.signer = new ethers.providers.Web3Provider(this.provider).getSigner()
-          this.chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }));
-          console.log("chainId:" + this.chainId);
+          // this.chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }));
+          // console.log("chainId:" + this.chainId);
         } catch(error){
           console.log("User denied account access", error)
         }
@@ -47,18 +50,37 @@ export default {
     },
 
     async initContract() {
-      const addr = require(`../../deployments/${this.chainId}/${ContractName}.json`);
-      const abi = require(`../../deployments/abi/${ContractName}.json`);
+      this.erc20Token = new ethers.Contract(erc20Addr.address, 
+        erc20Abi, this.signer);
     }, 
 
     getInfo() {
+      this.erc20Token.name().then((r) => {
+        this.name = r;
+      })
+      this.erc20Token.decimals().then((r) => {
+        this.decimal = r;
+      })
+      this.erc20Token.symbol().then((r) => {
+        this.symbol = r;
+      })
+      this.erc20Token.totalSupply().then((r) => {
+        this.supply = ethers.utils.formatUnits(r, 18);
+      })
 
+      this.erc20Token.balanceOf(this.account).then((r) => {
+        this.balance = ethers.utils.formatUnits(r, 18);
+      })
+    },
+
+    transfer() {
+      let amount = ethers.utils.parseUnits(this.amount, 18);
+      this.erc20Token.transfer(this.recipient, amount).then((r) => {
+        console.log(r);  // 返回值不是true
+        this.getInfo();
+      })
     }
   }
-
-
-
-
 }
 
 
@@ -66,28 +88,24 @@ export default {
 
 <template>
   <div >
+
       <div>
-        balance of account
-        <input type="text" :value="balance" />
-        <br />balance inquiry
-        <!-- 类型 input 改成了 button -->
-        <input type="button" value="get balance" @click="getbalance()" class="btn btn-block"/>
-        <br />target address
-        <input type="text" v-model="recipient" />
-        <br />transfer Amount
-        <input type="text" v-model="amount" />
-        <br />
-        <input type="button" value="transfer" @click="transfer()" class="btn btn-block"/>
+        <br /> Token名称 : {{ name  }}
+        <br /> Token符号 : {{  symbol }}
+        <br /> Token精度 : {{  decimal }}
+        <br /> Token发行量 : {{  supply }}
+        <br /> 我的余额 : {{ balance  }}
       </div>
 
       <div>
-        <br />name
-        <input type="text" :value="name" />
-        <br />symbol
-        <input type="text" :value="symbol" />
-        <br />decimal
-        <input type="text" :value="decimal" />
+        <br />转账到:
+        <input type="text" v-model="recipient" />
+        <br />转账金额
+        <input type="text" v-model="amount" />
+        <br />
+        <button @click="transfer()"> 转账 </button>
       </div>
+
   </div>
 </template>
 
@@ -105,6 +123,10 @@ h3 {
 .greetings h1,
 .greetings h3 {
   text-align: center;
+}
+
+div {
+  font-size: 1.2rem;
 }
 
 @media (min-width: 1024px) {
