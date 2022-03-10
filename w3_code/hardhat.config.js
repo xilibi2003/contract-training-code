@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
-
+require('@openzeppelin/hardhat-upgrades');
 // yarn run hardhat export-abi
 require('hardhat-abi-exporter');
 
