@@ -8,7 +8,7 @@ contract testEvent {
     constructor() {
     }
 
-    event Deposit(address _from, uint _value);
+    event Deposit(address indexed _from, uint _value);
 
     function deposit(uint value) public {
         emit Deposit(msg.sender, value);
